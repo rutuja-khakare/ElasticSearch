@@ -1,0 +1,219 @@
+DevTools are written in JSON Format,according to a key-value structure :
+{
+    "name" : "rutuja",
+    "location" : {
+        "city" : "Pune",
+        "geo" : [39.72, 92.71],
+    }
+    "age" : 21
+}
+It supports string,number,object,array,bool,null data types.
+
+1.Create Index:
+PUT index_name
+
+PUT pqr
+o/p:
+{
+  "acknowledged": true,
+  "shards_acknowledged": true,
+  "index": "pqr"
+}
+--------------------------------------------------------------------------------------------------------------------------
+2. Add Index
+POST /pqr/_doc
+{
+    "business_address" : "660 Sacramento St",
+    "business_city" : "San Francisco",
+    "business_id" : "2228",
+    "business_latitude" : "37.793698",
+    "business_location" : {
+        "type": "Point",
+        "coordinates" : [
+        -122.403984,
+        37.793698
+        ]
+    },
+    "business_longitude" : "-122.403984",
+    "business_name" : "Tokyo Express",
+    "business_postal_code" : "94111",
+    "business_state" : "CA",
+    "inspection_date" : "2016-02-04T00:00:00.000",
+    "inspection_id" : "2228_20160204",
+    "inspection_type" : "Routine",
+    "inspection_score" : 96,
+    "risk_category" : "Low Risk",
+    "violation_description" : "Unclean nonfood contact surfaces",
+    "violation_id" : "2228_20160204_103142"
+}
+
+
+
+o/p:{
+  "_index": "pqr",
+  "_id": "Yo7nI4cBQIhJiASrzsof",
+  "_version": 1,
+  "result": "created",
+  "_shards": {
+    "total": 2,
+    "successful": 1,
+    "failed": 0
+  },
+  "_seq_no": 0,
+  "_primary_term": 1
+}
+
+---------------------------------------------------------------------------------------------------------------------
+3.Delete index
+
+delete /pqr
+
+---------------------------------------------------------------------------------------------------------------------
+4.Display data
+
+GET pqr/_search
+
+---------------------------------------------------------------------------------------------------------------------
+
+5.Match query
+Returns documents that match a provided text, number, date or boolean value. The provided text is analyzed before matching.
+
+The match query is the standard query for performing a full-text search, including options for fuzzy matching.It finds the document which has either of the given words in it.
+
+find all businesses whose name contains the word “Soup” :
+
+GET /pqr/_doc/_search 
+{
+    "query" : {
+        "match" : {
+            "business_name" : "Soup"
+        }
+    }
+}
+
+
+--------------------------------------------------------------------------------------------------------------------
+6. Match_phrase query
+If you want to match a whole phrase, use the match_phrase function.Following snippet returns record that has the business
+name as san fransisco wholly.
+
+GET /pqr/_doc/_search 
+{
+    "query" : {
+        "match" : {
+            "business_name" : "san francisco"
+        }
+    }
+}
+
+-----------------------------------------------------------------------------------------------------------------------
+7.Aggregations
+Aggregations might be useful for example when a user wants, for example, to find all hotels within a price group, or all 
+restaurant that belongs to a certain group of inspections scores :
+
+GET /pqr/_doc/_search 
+{
+    "query" : {
+        "match" : {
+            "business_name" : "Soup"
+        }
+    },
+    "aggregations" : {
+        "inspection_score" : {
+            "range" : {
+                "field" : "inspection_score",
+                "ranges" : [
+                    {
+                        "key" : "0-80",
+                        "from" : 0,
+                        "to" : 80
+                    },
+                    {
+                        "key" : "81-90",
+                        "from" : 81,
+                        "to" : 90
+                    },
+                 
+                ]
+            }
+        }        
+    }
+}
+----------------------------------------------------------------------------------------------------------------
+8.Geo-Search
+imagine that a user is looking for the nearest restaurant. This kind of queries can typically be achieved by geo-search!
+First of all, we must change the document types to _mapping to specify that the coordinates are Geo-JSON points. 
+Mapping makes it more efficient to define the structure of the document, and more efficiently store/search the 
+data within our index. 
+
+PUT abc/_mapping/_doc
+{
+    "properties" : {
+        "business_address" : {
+            "type" : "text",
+            "fields" : {
+                "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                }
+            }
+        },
+        "business_city" : {
+            "type" : "text",
+            "fields" : {
+                "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                }
+            }
+        },
+        "business_id" : {
+            "type" : "text",
+            "fields" : {
+                "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                }
+            }
+        },
+        "business_latitude" : {
+            "type" : "text",
+            "fields" : {
+                "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                }
+            }
+        },
+        "business_longitude" : {
+            "type" : "text",
+            "fields" : {
+                "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                }
+            }
+        },
+        "business_name" : {
+            "type" : "text",
+            "fields" : {
+                "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                }
+            }
+        },
+        "coordinates" : {
+            "type" : "geo_point"
+        }
+    }
+}
+--------------------------------------------------------------------------------------------------------------------------
+9.Update Document
+GET /pqr/_doc/2/_update
+{
+    "doc" : {
+        "flagged" : true,
+        "views" : 0
+    }
+}

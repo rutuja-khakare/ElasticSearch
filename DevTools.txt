@@ -1,0 +1,484 @@
+# Click the Variables button, above, to create your own variables.
+GET ${exampleVariable1} // _search
+{
+  "query": {
+    "${exampleVariable2}": {} // match_all
+  }
+}
+#.........................................................................................................................
+
+#for listing all indices
+GET _cat/indices
+#.........................................................................................................................
+
+
+
+#for displaying data in curl format
+GET netflix_data/_search
+#.........................................................................................................................
+
+
+
+#for getting specific record using id
+GET netflix_data/_doc/_Y7eIocBQIhJiASrjafG
+
+/*........................................................................................................................
+syntax for complex queries
+must.......AND operation
+should....OR operation
+must_not...NOT operation
+filter....FILTERING DATA
+..........................................................................................................................
+*/
+
+
+
+
+
+/*1. match and match_phrase API
+
+#for complex queries to search documnet having 'nazi' in title
+GET netflix_data/_search
+{
+  "_source":["title"],
+  "size":5,
+  "min_score":0.5,
+  "query":{
+    "bool":{
+    "must":[
+      {
+        "match": {
+          "title": "nazi"
+        }      }],
+    "filter":[],
+    "should":[],
+    "must_not":[]
+    }
+  }
+}
+#..........................................................................................................................
+
+
+#for complex queries to search documnet having 'nazi' and 'camp'in title
+GET netflix_data/_search
+{
+  "_source":["title"],
+  "size":5,
+  "min_score":0.5,
+  "query":{
+    "bool":{
+    "must":[
+      {
+        "match": {
+          "title": "nazi"
+        }
+        
+        }
+        ,
+        {
+        "match": {
+          "title": "camps"
+        } 
+        }
+        ],
+    "filter":[],
+    "should":[],
+    "must_not":[]
+    }
+  }
+}
+#...........................................................................................................................
+
+
+
+#complex query for displaying 'nazi' or 'camp' in title 
+GET netflix_data/_search
+{
+  "_source":["title"],
+  "size":5,
+  "min_score":0.5,
+  "query":{
+    "bool":{
+    "must":[ ],
+    "filter":[],
+    "should":[
+      {
+        "match": {
+          "title": "nazi"
+        }
+        
+        }
+        ,
+        {
+        "match": {
+          "title": "camps"
+        } 
+        }],
+    "must_not":[]
+    }
+  }
+}
+#..........................................................................................................................
+
+
+
+#complex query for displaying 'nazi' or 'camp' in title  and min_score<0.4
+GET netflix_data/_search
+{
+  "_source":["title"],
+  "size":5,
+  "min_score":0.4,
+  "query":{
+    "bool":{
+    "must":[ ],
+    "filter":[],
+    "should":[
+      {
+        "match": {
+          "title": "nazi"
+        }
+        
+        }
+        ,
+        {
+        "match": {
+          "title": "camps"
+        } 
+        }],
+    "must_not":[]
+    }
+  }
+}
+#..........................................................................................................................
+
+
+/*..........................................................................................................................
+#write query where title has 'norm or king in it',and does not contain word
+'X'or 'Y'(hint:use nested bool)
+*/
+
+GET netflix_data/_search
+{
+  "_source":["title"],
+  "min_score":0.4,
+  "size":10,
+  "query":{
+    "bool":{
+      "must":[],
+      "filter":[],
+      "should":[
+        {
+          "match": {
+            "title": "norm"
+          }
+        },
+        {
+          "match": {
+            "title": "king"
+          }
+        }
+        ],
+      "must_not":[
+        {
+          "bool":{
+            "should":[
+              {
+                "match": {
+                  "title": "jack"
+                }
+              }
+              ,{
+                "match": {
+                  "title": "the"
+                }
+              }
+              ]
+             
+            
+          }
+        }
+        ]
+    }
+  }
+}
+
+
+
+
+/*2. Scroll API:
+You can use the scroll API to retrieve large sets of results from a single scrolling search request.
+*/
+GET netflix_data/_search?scroll=1m
+{
+  "_source":["title"],
+  "min_score":0.4,
+  "size":4,
+  "query":{
+    "bool":{
+      "must":[],
+      "filter":[],
+      "should":[
+        {
+          "match": {
+            "title": "norm"
+          }
+        },
+        {
+          "match": {
+            "title": "king"
+          }
+        }
+        ],
+      "must_not":[
+        {
+          "bool":{
+            "should":[
+              {
+                "match": {
+                  "title": "jack"
+                }
+              }
+              ,{
+                "match": {
+                  "title": "the"
+                }
+              }
+              ]
+             
+            
+          }
+        }
+        ]
+    }
+  }
+}
+
+/*.........................................................................................................................
+for displaying records on different pages
+*/
+
+POST /_search/scroll
+{
+  "scroll":"1m",
+  "scroll_id": "FGluY2x1ZGVfY29udGV4dF91dWlkDXF1ZXJ5QW5kRmV0Y2gBFjdGYUZLTnhkU0IteEZsclpCR3FBSVEAAAAAAAAa7xYyb0hZVTVWTlM4U3czSi1kMkpZQ1h3"
+}
+
+
+
+
+
+
+GET netflix_data/_search
+
+#...........................................................................................................................
+#complex query for displaying 'nazi' or 'camp' in title  and min_score<0.4
+GET netflix_data/_search
+{
+  "_source":[],
+  "size":1,
+  "min_score":0.9,
+  "query":{
+    "bool":{
+    "must":[],
+    "filter":[],
+    "should":[],
+    "must_not":[]
+    }
+  },
+    "aggs":{
+      "Duration":{
+        "terms":{
+        "field":"duration",
+        "order": {
+          "_count": "desc"
+        },
+        "size":5
+          
+        }
+      },
+      "Rating":{
+        "terms":{
+          "field":"rating",
+          "order": {
+            "_count": "desc"
+          },
+          "size":5
+        }
+      }
+    }
+  
+}
+
+/*..........................................................................................................................
+3.GeoMapping API
+*/
+#to display mapping
+GET abc/_mapping
+
+
+PUT abc
+{
+  "mappings": {
+    "properties": {
+      "location": {
+        "type": "geo_point"
+      }
+    }
+  }
+}
+
+#..........................................................................................................................
+POST /abc/_doc
+{
+    "business_address" : "660 Sacramento St",
+    "business_city" : "San Francisco",
+    "business_id" : "2228",
+    "business_latitude" : "37.793698",
+    "business_location" : {
+        "type": "Point",
+        "coordinates" : [
+        -122.403984,
+        37.793698
+        ]
+    },
+    "business_longitude" : "-122.403984",
+    "business_name" : "Tokyo Express",
+    "business_postal_code" : "94111",
+    "business_state" : "CA",
+    "inspection_date" : "2016-02-04T00:00:00.000",
+    "inspection_id" : "2228_20160204",
+    "inspection_type" : "Routine",
+    "inspection_score" : 96,
+    "risk_category" : "Low Risk",
+    "violation_description" : "Unclean nonfood contact surfaces",
+    "violation_id" : "2228_20160204_103142"
+}
+#..............................................................................................................................
+
+GET abc/_search
+{
+  "query":{
+    "bool":{
+    "must":[
+      {
+        "match": {
+          "business_address": "660 Sacramento St"
+        }      }],
+    "filter":[],
+    "should":[],
+    "must_not":[]
+    }
+  }
+}
+
+
+#............................................................................................................................
+#.............................ALIAS.........................................................................................
+PUT dummy_index
+
+
+
+PUT dummy_index/_doc/3
+{
+  "name":"hello Rutuja"
+}
+
+GET dummy_index/_search
+
+POST /_aliases
+{
+  "actions":[
+    {
+      "add":{
+        "index":"dummy_index",
+        "alias":"dummy"
+      }
+    }
+    ]
+}
+
+GET dummy/_search
+
+POST /_aliases
+{
+  "actions":[
+    {
+      "add":{
+        "index":"dummy_index",
+        "alias":"dummy",
+        "filter":{ "term":{"name":"Rutuja"}}
+      }
+    }
+    ]
+}
+
+
+/*..........................................................................................................................
+ARRAY MAPPING
+.........................................................................................................................*/
+
+PUT dummy_index/_doc/a
+{
+  "group":"fans",
+  "user":[
+    {
+    "first":"john",
+    "last":"smith"
+    },
+     {
+    "first":"alice",
+    "last":"smith"
+    }
+    ]
+  
+}
+
+
+/* elk stores data as:
+{
+  "group"           "fans"
+  "user.first"      ['john','alice']
+  "user.last"       ['smith','smith']
+}*/
+
+
+
+
+
+
+
+GET dummy_index/_search
+{
+  "_source":[],
+  "min_score":0.5,
+  "size":10,
+  "query":{
+    "bool":{
+      "must":[
+        { "match":{"user.first":"alice"}}
+        ],
+        "filter":[],
+        "should":[],
+        "must_not":[]
+    }
+  }
+}
+
+
+
+#.............................................................................................................................
+#update data inices
+
+GET netflix_data/_search
+
+
+GET netflix_data/_doc/AI7eIocBQIhJiASrjajG
+
+
+POST netflix_data/_update/AI7eIocBQIhJiASrjajG
+{
+  "script":"ctx._source.name = 'Rutuja Vinod Khakare"
+}
+
+
+
