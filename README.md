@@ -7,8 +7,13 @@ Step 1: Create data index.
 * Login 
 * Go to Machine Learning .
   |---  select visualize data from file to add .csv file.
+  
+  
   |---  import file.
+  
+  
   |---  enter index name and hit import .
   
 * Go to dev tools 
 * Type GET _cat/indices to view whether index is created or not.
+Step 2: Follow devtools.txt file for scripts for devtool api's. 
