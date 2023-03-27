@@ -6,6 +6,8 @@ Step 1: Create data index.
 * Open Kibana Browser (localhost:5601)
 * Login 
 * Go to Machine Learning .
+
+
   |---  select visualize data from file to add .csv file.
   
   
